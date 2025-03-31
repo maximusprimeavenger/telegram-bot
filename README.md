@@ -66,6 +66,3 @@ This bot communicates with the Notifier-Service through REST API. It sends and r
 ### Contributing
 Feel free to contribute by submitting issues or pull requests to improve the bot.
 
-### License
-This project is licensed under the MIT License.
-
