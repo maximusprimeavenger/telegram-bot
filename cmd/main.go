@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"telegram-bot/internal/helpers"
 	"telegram-bot/internal/models"
@@ -52,16 +51,21 @@ func main() {
 				}
 
 				switch data {
+				case "help":
+					client.SendMessage(queryChatId, "Available commands:\n/my_orders - View orders\n/register - Register an account")
+
 				case "check_orders":
 					client.SendMessage(queryChatId, "Sorry, for now it's not available")
 
 				case "answer_yes":
-					client.SendMessage(queryChatId, "Ok, now, you need to authorize.")
+					client.SendMessage(id, "Ok, now, you need to authorize.")
 					log.Printf("Session for chat %d: %+v", queryChatId, session)
-					client.Auth(update, queryChatId, session, session.Step, "")
+					client.Auth(update, id, session, "start", "")
 
 				case "answer_no":
-					client.SendMessage(queryChatId, "Ok, you can authorize later.")
+					client.SendMessage(id, "Ok, you can authorize later.")
+				case "cancel":
+					client.SendMessage(id, "Canceled")
 
 				default:
 					log.Printf("Unknown callback data: %s", data)
@@ -73,19 +77,6 @@ func main() {
 			if update.Message != nil {
 				messageChatId := update.Message.Chat.Id
 				log.Printf("New message from chat %d: %s", messageChatId, update.Message.Text)
-
-				switch session.Step {
-				case "start":
-					client.Auth(update, id, session, session.Step, update.Message.Text)
-				case "email":
-					client.Auth(update, id, session, session.Step, update.Message.Text)
-				case "name":
-					client.Auth(update, id, session, session.Step, update.Message.Text)
-				case "done":
-					client.SendMessage(id, "Registration completed!")
-				default:
-					client.SendMessage(id, fmt.Sprintf("I don't know this step %s", session.Step))
-				}
 
 				switch update.Message.Text {
 				case "/start":
@@ -101,9 +92,19 @@ func main() {
 				case "Check my orders":
 					client.SendMessage(messageChatId, "Your list of orders:")
 				case "Help":
-					client.SendMessage(messageChatId, "Available commands:\n/start - Start the bot\n/my_orders - View orders\n/register - Register an account")
+					client.SendMessage(messageChatId, "Available commands:\n/my_orders - View orders\n/register - Register an account")
 				default:
-					client.SendMessage(messageChatId, "Please, follow these buttons\n 👇 👇 👇 👇")
+					switch session.Step {
+					case "name":
+						client.Auth(update, id, session, "name", update.Message.Text)
+					case "email":
+						client.Auth(update, id, session, "email", update.Message.Text)
+					default:
+						client.SendMessageWithButtons(messageChatId, "Please, follow these buttons\n 👇 👇 👇 👇",
+							[]string{"Help", "Cancel"},
+							[]string{"help", "cancel"},
+						)
+					}
 				}
 			}
 		}

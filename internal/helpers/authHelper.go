@@ -11,13 +11,6 @@ import (
 
 func (client *Client) Auth(update models.Update, chatID int, user *models.UserSession, step, text string) error {
 	log.Printf("Auth called for chatId: %d, Step: %s", chatID, step)
-	if client.UserSessions == nil {
-		log.Println("UserSessions is nil, initializing...")
-		client.UserSessions = make(map[int]*models.UserSession)
-		user = &models.UserSession{
-			Step: "start",
-		}
-	}
 	log.Println("Connecting to SQL")
 	dbConn, err := db.ConnectToSQL()
 	if err != nil {
@@ -32,27 +25,20 @@ func (client *Client) Auth(update models.Update, chatID int, user *models.UserSe
 	} else if update.CallbackQuery != nil {
 		username = update.CallbackQuery.From.Username
 	}
-	// if update.Message != nil {
-	// 	chatId = update.Message.Chat.Id
-	// 	text = update.Message.Text
-	// } else if update.CallbackQuery != nil {
-	// 	chatId = update.CallbackQuery.Message.Chat.Id
-	// } else {
-	// 	log.Println("Error: update contains neither Message nor CallbackQuery")
-	// 	return errors.New("invalid update structure")
-	// }
 
 	log.Printf("Calling Auth for chat: %d, user:%v", chatID, user)
-	var foundUser models.UserSession
+	var foundUser models.User
 	result := dbConn.Where("username = ?", username).First(&foundUser)
 
 	if result.Error == nil {
 		client.UserSessions[chatID] = &models.UserSession{
-			Id:       chatID,
-			Step:     "done",
-			Username: foundUser.Username,
-			Name:     foundUser.Name,
-			Email:    foundUser.Email,
+			User: models.User{
+				Id:       chatID,
+				Username: foundUser.Username,
+				Name:     foundUser.Name,
+				Email:    foundUser.Email,
+			},
+			Step: "done",
 		}
 		client.SendMessage(chatID, "Welcome back, "+foundUser.Name+"!")
 		return nil
@@ -65,11 +51,13 @@ func (client *Client) Auth(update models.Update, chatID int, user *models.UserSe
 
 	if _, exists := client.UserSessions[chatID]; !exists {
 		client.UserSessions[chatID] = &models.UserSession{
-			Id:       chatID,
-			Step:     "name",
-			Username: update.Message.Chat.Username,
+			User: models.User{
+				Username: update.Message.Chat.Username,
+				Id:       chatID,
+			},
+			Step: "name",
 		}
-		client.SendMessageWithButtons(chatID, "Enter your name", []string{"Cancel"}, []string{"cancel"})
+
 		return nil
 	}
 
@@ -77,17 +65,37 @@ func (client *Client) Auth(update models.Update, chatID int, user *models.UserSe
 
 	switch step {
 	case "start":
-		client.SendMessage(chatID, "Enter your name")
+		session.User.Id = chatID
+		client.SendMessageWithButtons(chatID, "Enter your name", []string{"Cancel"}, []string{"cancel"})
+		session.Step = "name"
 	case "name":
-		session.Name = text
+		if text != "" {
+			session.User.Name = text
+		}
 		session.Step = "email"
-		client.SendMessage(chatID, "Enter your email")
+		client.SendMessageWithButtons(chatID, "Enter your email", []string{"Cancel"}, []string{"cancel"})
 	case "email":
-		session.Email = text
-		if !isValidEmail(session.Email) {
+		if text != "" {
+			session.User.Email = text
+		}
+		if !isValidEmail(session.User.Email) {
 			return ErrorHelper(err, "Email not valid")
 		}
 		session.Step = "done"
+		var user = models.User{
+			Id:       chatID,
+			Username: username,
+			Name:     session.User.Name,
+			Email:    session.User.Email,
+		}
+		result := dbConn.Create(&user)
+		if result.Error != nil {
+			log.Println("Error creating user:", result.Error)
+		} else {
+			log.Println("User created successfully: ", user)
+		}
+		client.SendMessage(chatID, "Registered successfully!")
+		return result.Error
 	}
 
 	return nil
