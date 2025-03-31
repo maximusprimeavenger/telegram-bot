@@ -45,7 +45,7 @@ ROOT_PASSWORD = your_root_password
 
 #### With Docker
 ```sh
-docker-compose up
+docker compose up
 ```
 
 #### Without Docker
