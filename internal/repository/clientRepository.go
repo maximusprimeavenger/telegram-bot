@@ -1,4 +1,4 @@
-package helpers
+package repository
 
 import (
 	"bytes"
@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"telegram-bot/internal/helpers"
 	"telegram-bot/internal/models"
 )
 
@@ -44,17 +45,17 @@ func (c *Client) Updates(offset int, limit int) ([]models.Update, error) {
 	}
 	paramsJSON, err := json.Marshal(params)
 	if err != nil {
-		return nil, ErrorHelper(err, "error marshaling parameters")
+		return nil, helpers.ErrorHelper(err, "error marshaling parameters")
 	}
 	data, err := c.sendRequest(getUpdates, paramsJSON)
 	if err != nil {
-		return nil, ErrorHelper(err, "cannot read the data from body")
+		return nil, helpers.ErrorHelper(err, "cannot read the data from body")
 	}
 
 	var res models.UpdateResponse
 
 	if err := json.Unmarshal(data, &res); err != nil {
-		return nil, ErrorHelper(err, "error unparsing json")
+		return nil, helpers.ErrorHelper(err, "error unparsing json")
 	}
 
 	return res.Result, nil
@@ -68,14 +69,14 @@ func (c *Client) sendRequest(method string, data []byte) ([]byte, error) {
 	}
 	req, err := http.NewRequest(http.MethodPost, u.String(), bytes.NewBuffer(data))
 	if err != nil {
-		return nil, ErrorHelper(err, fmt.Sprint("can not create a request with url:", u))
+		return nil, helpers.ErrorHelper(err, fmt.Sprint("can not create a request with url:", u))
 	}
 
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := c.client.Do(req)
 	if err != nil {
-		return nil, ErrorHelper(err, "cannot send a request")
+		return nil, helpers.ErrorHelper(err, "cannot send a request")
 	}
 	defer resp.Body.Close()
 
@@ -85,7 +86,7 @@ func (c *Client) sendRequest(method string, data []byte) ([]byte, error) {
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, ErrorHelper(err, "cannot read the response")
+		return nil, helpers.ErrorHelper(err, "cannot read the response")
 	}
 
 	fmt.Println("Telegram API response:", string(body))
@@ -100,12 +101,12 @@ func (c *Client) SendMessage(chatId int, text string) error {
 
 	dataJSON, err := json.Marshal(data)
 	if err != nil {
-		return ErrorHelper(err, "error marshaling markup")
+		return helpers.ErrorHelper(err, "error marshaling markup")
 	}
 	fmt.Println("Reply markup JSON:", string(dataJSON))
 	_, err = c.sendRequest(sendMessage, dataJSON)
 	if err != nil {
-		return ErrorHelper(err, "error while sending a request")
+		return helpers.ErrorHelper(err, "error while sending a request")
 	}
 	return nil
 }
@@ -130,11 +131,11 @@ func (c *Client) SendMessageWithButtons(chatId int, text string, params, callbac
 	}
 	bodyJSON, err := json.Marshal(body)
 	if err != nil {
-		return ErrorHelper(err, "error marshaling body")
+		return helpers.ErrorHelper(err, "error marshaling body")
 	}
 	resp, err := c.sendRequest(sendMessage, bodyJSON)
 	if err != nil {
-		return ErrorHelper(err, "error sending a request")
+		return helpers.ErrorHelper(err, "error sending a request")
 	}
 	log.Println("Response:", string(resp))
 	return nil
@@ -159,21 +160,12 @@ func (c *Client) SendWithKeyboard(chatId int, text string, textButton []string) 
 	}
 	dataJSON, err := json.Marshal(data)
 	if err != nil {
-		return ErrorHelper(err, "error marshaling body")
+		return helpers.ErrorHelper(err, "error marshaling body")
 	}
 	resp, err := c.sendRequest(sendMessage, dataJSON)
 	if err != nil {
-		return ErrorHelper(err, "error sending a request")
+		return helpers.ErrorHelper(err, "error sending a request")
 	}
 	log.Println("Response:", string(resp))
 	return nil
-}
-
-func IdTaking(update models.Update) (int, error) {
-	if update.Message != nil && update.Message.Chat.Id != 0 {
-		return update.Message.Chat.Id, nil
-	} else if update.CallbackQuery != nil && update.CallbackQuery.From.Id != 0 {
-		return update.CallbackQuery.From.Id, nil
-	}
-	return 0, fmt.Errorf("couldn't find id")
 }

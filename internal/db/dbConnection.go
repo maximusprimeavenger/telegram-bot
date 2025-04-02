@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"telegram-bot/internal/models"
 
@@ -24,5 +25,6 @@ func ConnectToSQL() (*gorm.DB, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error with migrating database: %v", err)
 	}
+	log.Println("Connected to MySQL!")
 	return db, err
 }
