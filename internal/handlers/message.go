@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"log"
 	"telegram-bot/internal/models"
 	"telegram-bot/internal/repository"
@@ -18,6 +19,9 @@ func HandleMessage(update models.Update, client *repository.Client) {
 			[]string{"Yes", "No"},
 			[]string{"answer_yes", "answer_no"},
 		)
+	case "/set_notify":
+		setMode(messageChatId, client)
+
 	case "/my_orders":
 		client.SendMessage(messageChatId, "Your list of orders:")
 	case "/register":
@@ -39,4 +43,20 @@ func HandleMessage(update models.Update, client *repository.Client) {
 			)
 		}
 	}
+}
+
+func setMode(id int, client *repository.Client) {
+	mode, antiMode := repository.NotifyMode(id)
+	answer1, answer2 := "", ""
+	if mode == "on" {
+		answer1, answer2 = "notify_no", "notify_yes"
+
+	} else {
+		answer1, answer2 = "notify_yes", "notify_no"
+	}
+	client.SendMessageWithButtons(id,
+		fmt.Sprintf("Your notifications is %s,\n you want to turn them %s?", mode, antiMode),
+		[]string{"Yes", "No"},
+		[]string{answer1, answer2},
+	)
 }

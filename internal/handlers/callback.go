@@ -18,7 +18,7 @@ func HandleCallback(update models.Update, client *repository.Client) {
 
 	switch data {
 	case "help":
-		client.SendMessage(queryChatId, "Available commands:\n/my_orders - View orders\n/register - Register an account")
+		client.SendMessage(queryChatId, "Available commands:\n/my_orders - View orders\n/register - Register an account\n/set_notifications/set_notify")
 
 	case "check_orders":
 		client.SendMessage(queryChatId, "Sorry, for now it's not available")
@@ -30,6 +30,15 @@ func HandleCallback(update models.Update, client *repository.Client) {
 
 	case "answer_no":
 		client.SendMessage(queryChatId, "Ok, you can authorize later.")
+
+	case "notify_no":
+		repository.NotificationsOnOff(queryChatId, false)
+		client.SendMessage(queryChatId, "Notifications are disabled")
+
+	case "notify_yes":
+		repository.NotificationsOnOff(queryChatId, true)
+		client.SendMessage(queryChatId, "Notifications are enabled")
+
 	case "cancel":
 		delete(client.UserSessions, queryChatId)
 		client.SendMessage(queryChatId, "Canceled")

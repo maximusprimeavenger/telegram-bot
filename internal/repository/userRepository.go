@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"telegram-bot/internal/helpers"
 	"telegram-bot/internal/models"
 
 	"gorm.io/gorm"
@@ -14,7 +15,11 @@ func NewUserRepository(db *gorm.DB) *UserRepository {
 	return &UserRepository{db: db}
 }
 
-func (r *UserRepository) RemoveNotifications(id int, email string) error {
-	result := r.db.Model(&models.User{}).Where(&models.User{Id: id}).Update("notify_mode", false)
-	return result.Error
+func (r *UserRepository) findUser(id int) (*models.User, error) {
+	var user = models.User{}
+	result := r.db.Find(&user).Where(&models.User{Id: id})
+	if result.Error != nil {
+		return nil, helpers.ErrorHelper(result.Error, "Couldn't find user")
+	}
+	return &user, nil
 }
