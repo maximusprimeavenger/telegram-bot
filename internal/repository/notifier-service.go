@@ -40,7 +40,7 @@ func NotificationsOnOff(id int, answer bool) error {
 }
 
 func (r *UserRepository) RemoveTurnNotifications(id int, mode bool) error {
-	result := r.db.Model(&models.User{}).Where(&models.User{Id: id}).Update("notify_mode", mode)
+	result := r.db.Model(&models.User{}).Where(&models.User{ID: id}).Update("notify_mode", mode)
 	return result.Error
 }
 

@@ -21,7 +21,7 @@ func ConnectToSQL() (*gorm.DB, error) {
 	dsn := fmt.Sprintf("%s:%s@tcp(mysql:%s)/notifier?charset=utf8mb4&parseTime=True&loc=Local",
 		os.Getenv("USER"), os.Getenv("PASSWORD"), os.Getenv("PORT"))
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
-	db.AutoMigrate(&models.UserSession{})
+	db.AutoMigrate(&models.User{})
 	if err != nil {
 		return nil, fmt.Errorf("error with migrating database: %v", err)
 	}

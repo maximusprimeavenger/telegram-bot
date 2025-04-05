@@ -1,18 +1,27 @@
 package helpers
 
 import (
+	"context"
 	"fmt"
 	"net/http"
+	"time"
 
 	"encoding/json"
 )
 
 func NotidierIdTaking(email string) (string, error) {
 	url := fmt.Sprintf("http://user-auth-service:8081/users/%s", email)
-	resp, err := http.Get(url)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
-		return "", ErrorHelper(err, "error taking id from user service")
+		return "", fmt.Errorf("error creating request:%v", err)
 	}
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("error making request:%v", err)
+	}
+	defer resp.Body.Close()
 	var data map[string]string
 	err = json.NewDecoder(resp.Body).Decode(&data)
 	if err != nil {

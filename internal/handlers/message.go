@@ -29,7 +29,7 @@ func HandleMessage(update models.Update, client *repository.Client) {
 	case "Check my orders":
 		client.SendMessage(messageChatId, "Your list of orders:")
 	case "Help":
-		client.SendMessage(messageChatId, "Available commands:\n/my_orders - View orders\n/register - Register an account")
+		client.SendMessage(messageChatId, "Available commands:\n/my_orders - View orders\n/register - Register an account \n/set_notify - Set notifications")
 	default:
 		switch session.Step {
 		case "name":

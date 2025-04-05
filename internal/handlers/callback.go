@@ -18,7 +18,7 @@ func HandleCallback(update models.Update, client *repository.Client) {
 
 	switch data {
 	case "help":
-		client.SendMessage(queryChatId, "Available commands:\n/my_orders - View orders\n/register - Register an account\n/set_notifications/set_notify")
+		client.SendMessage(queryChatId, "Available commands:\n/my_orders - View orders\n/register - Register an account\n/set_notify - Set notifications")
 
 	case "check_orders":
 		client.SendMessage(queryChatId, "Sorry, for now it's not available")

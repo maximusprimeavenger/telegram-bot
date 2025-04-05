@@ -10,7 +10,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func (client *Client) Auth(update models.Update, chatID int, user *models.UserSession, step, text string) error {
+func (client *Client) Auth(update models.Update, chatID int, userSession *models.UserSession, step, text string) error {
 	log.Printf("Auth called for chatId: %d, Step: %s", chatID, step)
 	log.Println("Connecting to SQL")
 	dbConn, err := db.ConnectToSQL()
@@ -45,7 +45,7 @@ func (client *Client) Auth(update models.Update, chatID int, user *models.UserSe
 		client.UserSessions[chatID] = &models.UserSession{
 			User: models.User{
 				Username: username,
-				Id:       chatID,
+				ID:       chatID,
 			},
 			Step: "name",
 		}
@@ -53,36 +53,36 @@ func (client *Client) Auth(update models.Update, chatID int, user *models.UserSe
 		return nil
 	}
 
-	session := client.UserSessions[chatID]
-
 	switch step {
 	case "start":
 		client.SendMessageWithButtons(chatID, "Enter your name", []string{"Cancel"}, []string{"cancel"})
-		session.Step = "name"
+		userSession.Step = "name"
 	case "name":
 		if text != "" {
-			session.User.Name = text
+			userSession.User.Name = text
 		}
-		session.Step = "email"
+		userSession.Step = "email"
 		client.SendMessageWithButtons(chatID, "Enter your email", []string{"Cancel"}, []string{"cancel"})
 	case "email":
-		if !isValidEmail(session.User.Email) || text == "" {
+		log.Println("Hey, I'm started email!")
+		if !isValidEmail(userSession.User.Email) || text == "" {
 			return helpers.ErrorHelper(err, "Email not valid")
 		}
-		session.Step = "done"
-		userId, err := helpers.NotidierIdTaking(session.User.Email)
+		userSession.Step = "done"
+		userId, err := helpers.NotidierIdTaking(text)
 		if err != nil {
 			return err
 		}
+		log.Println("Hey, I'm here!")
 		var user = models.User{
-			Id:         chatID,
+			ID:         chatID,
 			Username:   username,
-			Name:       session.User.Name,
-			Email:      session.User.Email,
-			NotifierId: userId,
+			Name:       userSession.User.Name,
+			Email:      text,
+			NotifierID: userId,
 			NotifyMode: true,
 		}
-
+		log.Println("Hey, I'm here, under user!")
 		result := dbConn.Create(&user)
 		if result.Error != nil {
 			log.Println("Error creating user:", result.Error)

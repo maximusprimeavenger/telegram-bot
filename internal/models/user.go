@@ -6,10 +6,10 @@ type UserSession struct {
 }
 
 type User struct {
-	Id         int    `gorm:"primaryKey"`
-	Email      string `gorm:"uniqueIndex;not null"`
-	Name       string `gorm:"size:30;not null"`
-	Username   string `gorm:"uniqueIndex;not null"`
-	NotifierId string `gorm:"uniqueIndex;not null"`
-	NotifyMode bool
+	ID         int    `gorm:"primaryKey"`
+	Email      string `gorm:"type:varchar(191);unique;not null"`
+	Name       string `gorm:"type:varchar(30);not null"`
+	Username   string `gorm:"type:varchar(191);unique;not null"`
+	NotifierID string `gorm:"type:varchar(191);unique;not null"`
+	NotifyMode bool   `gorm:"not null"`
 }
