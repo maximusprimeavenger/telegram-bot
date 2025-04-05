@@ -10,7 +10,7 @@ import (
 )
 
 func NotidierIdTaking(email string) (string, error) {
-	url := fmt.Sprintf("http://user-auth-service:8081/users/%s", email)
+	url := fmt.Sprintf("http://user-auth-service:8081/users/notifier/%s", email)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
