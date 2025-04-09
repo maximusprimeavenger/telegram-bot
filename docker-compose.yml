@@ -12,13 +12,28 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=${ROOT_PASSWORD}
       - MYSQL_DATABASE=notifier
-      - MYSQL_USER=${USER}
+      - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD=${PASSWORD}
     ports:
       - "3306:${PORT}"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - docker-network
 
   bot:
     build: .
     container_name: telegram-bot
     ports:
       - "8000:${PORT_BOT}"
+    networks:
+      - docker-network
+    env_file:
+      - ./.env
+    depends_on:
+      - mysql
+networks:
+  docker-network:

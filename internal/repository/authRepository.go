@@ -69,6 +69,7 @@ func (client *Client) Auth(update models.Update, chatID int, userSession *models
 			return helpers.ErrorHelper(err, "Email not valid")
 		}
 		userSession.Step = "done"
+		log.Println("Hey, my step now is done!")
 		userId, err := helpers.NotidierIdTaking(text)
 		if err != nil {
 			return err

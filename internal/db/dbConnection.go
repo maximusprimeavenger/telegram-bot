@@ -19,12 +19,12 @@ func ConnectToSQL() (*gorm.DB, error) {
 		return nil, err
 	}
 	dsn := fmt.Sprintf("%s:%s@tcp(mysql:%s)/notifier?charset=utf8mb4&parseTime=True&loc=Local",
-		os.Getenv("USER"), os.Getenv("PASSWORD"), os.Getenv("PORT"))
+		os.Getenv("MYSQL_USER"), os.Getenv("PASSWORD"), os.Getenv("PORT"))
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
-	db.AutoMigrate(&models.User{})
 	if err != nil {
 		return nil, fmt.Errorf("error with migrating database: %v", err)
 	}
+	db.AutoMigrate(&models.User{})
 	log.Println("Connected to MySQL!")
 	return db, err
 }
