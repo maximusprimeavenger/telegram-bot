@@ -1,0 +1,35 @@
+name: CI-CD Pipeline
+
+on: [push]
+
+jobs:
+    build-and-test:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Set up the environment
+              run: |
+                echo "SECRET=${{secrets.SECRET}}" >> .env
+                echo "ROOT_PASSWORD=${{secrets.ROOT_PASSWORD}}" >> .env
+                echo "PORT_BOT=${{secrets.PORT_BOT}}" >> .env
+                echo "PORT_MYSQL=${{secrets.PORT_MYSQL}}"
+            - name: Set up Go
+              uses: actions/setup-go@v4
+              with:
+                go-version: '1.23'
+
+            - name: Install dependencies
+              uses: go mod tidy
+
+            - name: Start test environment and run tests
+            #TODO docker compose up --profile  test
+              uses: docker compose up
+
+            - name: Stop and remove containers
+              run: docker compose down
+
+    build-and-push:
+        needs: build-and-test
+        runs-on: ubuntu-latest

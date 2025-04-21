@@ -3,19 +3,19 @@ services:
   mysql:
     image: mysql
     restart: always
-    container_name: mysql
+    container_name: mymysql
     env_file:
       - ./.env
-    command: --init-file /data/application/init.sql
     volumes:
-      - ./init.sql:/data/application/init.sql
+       - ./test-init.sql:/docker-entrypoint-initdb.d/test-init.sql
+       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     environment:
       - MYSQL_ROOT_PASSWORD=${ROOT_PASSWORD}
-      - MYSQL_DATABASE=notifier
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${PASSWORD}
+      - MYSQL_DATABASE=notifier_test
+      - MYSQL_USER=testuser
+      - MYSQL_PASSWORD=testpass
     ports:
-      - "3306:${PORT}"
+      - "3306:${PORT_MYSQL}"
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
@@ -23,10 +23,13 @@ services:
       retries: 5
     networks:
       - docker-network
+    profiles:
+      - test
+      - dev
 
   bot:
     build: .
-    container_name: telegram-bot
+    container_name: tele-bot
     ports:
       - "8000:${PORT_BOT}"
     networks:
@@ -35,5 +38,34 @@ services:
       - ./.env
     depends_on:
       - mysql
+    profiles:
+      - dev
+
+  check-db-started:
+      image: jwilder/dockerize:0.6.1          
+      depends_on:
+         - mysql          
+      command: 'dockerize -wait=tcp://mysql:3306 -timeout 30s'
+      networks:
+        - docker-network
+
+  test-bot:
+    build: 
+      context: .
+      dockerfile: Dockerfile.test
+    container_name: test-bot
+    networks:
+      - docker-network
+    env_file:
+      - ./.env
+    ports:
+      - "8000:${PORT_BOT}"
+    depends_on:
+      check-db-started:
+        condition: service_completed_successfully  
+    profiles:
+      - test
+    
+      
 networks:
   docker-network:
