@@ -21,11 +21,9 @@ func HandleCallback(update models.Update, client *repository.Client) {
 		client.SendMessage(queryChatId, "Available commands:\n/my_orders - View orders\n/register - Register an account\n/set_notify - Set notifications")
 
 	case "check_orders":
-		client.SendMessage(queryChatId, "Sorry, for now it's not available")
+		client.CheckOrders(update, queryChatId)
 
 	case "answer_yes":
-		client.SendMessage(queryChatId, "Ok, now, you need to authorize.")
-		log.Printf("Session for chat %d: %+v", queryChatId, session)
 		client.Auth(update, queryChatId, session, "start", "")
 
 	case "answer_no":

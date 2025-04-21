@@ -1,8 +1,11 @@
 package models
 
+import "context"
+
 type UserSession struct {
-	User User
-	Step string
+	User   User
+	Step   string
+	Cancel context.CancelFunc
 }
 
 type User struct {

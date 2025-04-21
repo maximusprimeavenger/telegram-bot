@@ -2,15 +2,15 @@ package helpers
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
-
-	"encoding/json"
 )
 
-func NotidierIdTaking(email string) (string, error) {
-	url := fmt.Sprintf("http://user-auth-service:8081/users/notifier/%s", email)
+
+func NotifierIdTaking(email string) (string, error) {
+	url := fmt.Sprintf("http://user-auth-service:8081/notifier/%s", email)
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)

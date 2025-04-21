@@ -15,7 +15,7 @@ func HandleMessage(update models.Update, client *repository.Client) {
 	switch update.Message.Text {
 	case "/start":
 		client.SendMessageWithButtons(messageChatId,
-			"Hello! Welcome to service of notifications. Want to authorize to receive notifications?",
+			"Hello! Welcome to service of notifications.\nWant to authorize to receive notifications?",
 			[]string{"Yes", "No"},
 			[]string{"answer_yes", "answer_no"},
 		)
@@ -23,7 +23,7 @@ func HandleMessage(update models.Update, client *repository.Client) {
 		setMode(messageChatId, client)
 
 	case "/my_orders":
-		client.SendMessage(messageChatId, "Your list of orders:")
+		client.CheckOrders(update, messageChatId)
 	case "/register":
 
 	case "Check my orders":
@@ -38,8 +38,8 @@ func HandleMessage(update models.Update, client *repository.Client) {
 			client.Auth(update, messageChatId, session, "email", update.Message.Text)
 		default:
 			client.SendMessageWithButtons(messageChatId, "Please, follow these buttons\n 👇 👇 👇 👇",
-				[]string{"Help", "Cancel"},
-				[]string{"help", "cancel"},
+				[]string{"Help", "Check my orders"},
+				[]string{"help", "check_orders"},
 			)
 		}
 	}
