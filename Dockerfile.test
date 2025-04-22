@@ -7,8 +7,7 @@ COPY go.* .
 RUN go mod download
 
 COPY . .
-COPY .env .env 
 
-WORKDIR /app/unit-tests
+WORKDIR /app/tests/unit-tests
 
 RUN go test -v

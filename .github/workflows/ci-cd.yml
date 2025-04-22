@@ -21,7 +21,7 @@ jobs:
                 go-version: '1.23'
 
             - name: Install dependencies
-              uses: go mod tidy
+              run: go mod tidy
 
             - name: Start test environment and run tests
             #TODO docker compose up --profile  test
