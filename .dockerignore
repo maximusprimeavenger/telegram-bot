@@ -1,7 +1,3 @@
-.git
-tests/
+.git*
 *.md
-*.sql
-Dockerfile.test
 *.log
-.env

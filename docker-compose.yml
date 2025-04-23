@@ -60,6 +60,7 @@ services:
       - ./.env
     ports:
       - "8000:${PORT_BOT}"
+    command: ["sh", "-c", "cd /app/tests/integrate-tests && go test -v"]
     depends_on:
       check-db-started:
         condition: service_completed_successfully  

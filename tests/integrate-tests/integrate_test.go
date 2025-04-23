@@ -3,7 +3,6 @@ package tests_test
 import (
 	"fmt"
 	"os"
-	"telegram-bot/internal/models"
 	"testing"
 
 	"github.com/joho/godotenv"
@@ -28,13 +27,13 @@ func TestConnectToSQL(t *testing.T) {
 		t.Fatalf("error loading environment variables: %v", err)
 	}
 
-	dsn := fmt.Sprintf("testuser:testpass@tcp(mysql:%s)/notifier?charset=utf8mb4&parseTime=True&loc=Local", os.Getenv("PORT_MYSQL"))
+	dsn := fmt.Sprintf("testuser:testpass@tcp(mysql:%s)/notifier_test?charset=utf8mb4&parseTime=True&loc=Local", os.Getenv("PORT_MYSQL"))
 	dbConn, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		t.Fatalf("error with migrating database: %v", err)
 	}
 
-	err = dbConn.AutoMigrate(&models.User{})
+	err = dbConn.AutoMigrate(&User{})
 	if err != nil {
 		t.Fatalf("error during auto migration: %v", err)
 	}
