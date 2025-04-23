@@ -27,7 +27,7 @@ jobs:
               run: docker compose --profile test up -d
 
             - name: Stop and remove containers
-              run: docker compose down
+              run: docker compose --profile test down
 
     build-and-push:
         needs: build-and-test
