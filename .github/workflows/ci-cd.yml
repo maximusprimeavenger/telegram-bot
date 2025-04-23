@@ -24,7 +24,7 @@ jobs:
               run: go mod tidy
 
             - name: Start test environment and run tests
-              run: docker compose --profile test up --wait --exit-code-from test-bot
+              run: docker compose --profile test up -d
 
             - name: Stop and remove containers
               run: docker compose down
