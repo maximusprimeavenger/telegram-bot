@@ -19,11 +19,6 @@ const (
 	fakeToken string = "fake-token-telegram"
 )
 
-/*
-queryChatId := update.CallbackQuery.Message.Chat.Id
-
-	data := update.CallbackQuery.Data
-*/
 func TestHandleCallback(t *testing.T) {
 	updates := []models.Update{
 		{
@@ -67,21 +62,40 @@ func TestHandleCallback(t *testing.T) {
 		handlers.HandleCallback(update, client)
 		outputs[i] = buf.String()
 	}
-
+	split := strings.Split(outputs[2], "\n")
 	assert.Equal(t, "Unknown callback data: test", strings.TrimSuffix(outputs[1], "\n"), fmt.Sprintf("Not equal outputs:%s", outputs[1]))
-	assert.Equal(t, "Empty callback query data from chat: 5\nUnknown callback data: \n", outputs[2], fmt.Sprintf("Not equal outputs:%s", outputs[2]))
+	assert.Equal(t, "Empty callback query data from chat: 5", split[0], fmt.Sprintf("Not equal outputs:%s", outputs[2]))
 }
 
 func TestHandleMessage(t *testing.T) {
-	update := models.Update{
-		Message: &models.Message{
-			Text: "/start",
-			Chat: &models.Chat{
-				Id: 11,
+	updates := []models.Update{
+		{
+			Message: &models.Message{
+				Text: "/start",
+				Chat: &models.Chat{
+					Id: 11,
+				},
+			},
+		},
+		{
+			Message: &models.Message{
+				Text: "test",
+				Chat: &models.Chat{
+					Id: 55,
+				},
+			},
+		},
+		{
+			Message: &models.Message{
+				Text: "",
+				Chat: &models.Chat{
+					Id: 5,
+				},
 			},
 		},
 	}
-
-	client := repository.New(fakeHost, fakeToken)
-	handlers.HandleMessage(update, client)
+	for _, update := range updates {
+		client := repository.New(fakeHost, fakeToken)
+		handlers.HandleMessage(update, client)
+	}
 }

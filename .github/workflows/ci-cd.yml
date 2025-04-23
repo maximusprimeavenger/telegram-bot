@@ -14,7 +14,7 @@ jobs:
                 echo "SECRET=${{secrets.SECRET}}" >> .env
                 echo "ROOT_PASSWORD=${{secrets.ROOT_PASSWORD}}" >> .env
                 echo "PORT_BOT=${{secrets.PORT_BOT}}" >> .env
-                echo "PORT_MYSQL=${{secrets.PORT_MYSQL}}"
+                echo "PORT_MYSQL=${{secrets.PORT_MYSQL}}" >> .env
             - name: Set up Go
               uses: actions/setup-go@v4
               with:
@@ -24,8 +24,7 @@ jobs:
               run: go mod tidy
 
             - name: Start test environment and run tests
-            #TODO docker compose up --profile  test
-              uses: docker compose up
+              run: docker compose --profile test up --abort-on-container-exit --exit-code-from test_bot
 
             - name: Stop and remove containers
               run: docker compose down
@@ -33,3 +32,27 @@ jobs:
     build-and-push:
         needs: build-and-test
         runs-on: ubuntu-latest
+        steps:
+
+          - name: Checkout repository
+            uses: actions/checkout@v4
+            
+          - name: Login to Docker Hub
+            uses: docker/login-action@v3
+            with:
+              username: ${{ vars.DOCKERHUB_USERNAME }}
+              password: ${{ secrets.DOCKERHUB_REPOS_TOKEN }}
+          - name: Set up QEMU
+            uses: docker/setup-qemu-action@v3
+      
+          - name: Set up Docker Buildx
+            uses: docker/setup-buildx-action@v3
+
+          - name: Build and push Telegram Bot image
+            uses: docker/build-push-action@v6
+            with:
+              context: .
+              file: ./Dockerfile
+              push: true
+              tags: maxfiv/telegram-bot:latest
+
